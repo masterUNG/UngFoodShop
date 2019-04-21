@@ -3,6 +3,7 @@ import 'regster.dart';
 import 'package:http/http.dart' show get;
 import 'dart:convert';
 import '../models/user_model.dart';
+import './product.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -74,7 +75,7 @@ class _AuthenState extends State<Authen> {
     );
   }
 
-  Widget loginButton() {
+  Widget loginButton(BuildContext context) {
     return RaisedButton(
       shape: new RoundedRectangleBorder(
           borderRadius: new BorderRadius.circular(30.0)),
@@ -87,13 +88,13 @@ class _AuthenState extends State<Authen> {
         if (formKey.currentState.validate()) {
           formKey.currentState.save();
           print('user = $user, password = $password');
-          checkUserAndPassword();
+          checkUserAndPassword(context);
         }
       },
     );
   }
 
-  void checkUserAndPassword() async {
+  void checkUserAndPassword(BuildContext context) async {
     String urlString =
         'https://www.androidthai.in.th/tid/getUserWhereUserMaster.php?isAdd=true&User=$user';
     var response = await get(urlString);
@@ -106,25 +107,27 @@ class _AuthenState extends State<Authen> {
     } else {
       print('User True');
       for (var objJSON in result) {
-        
-          print('objJSON = $objJSON');
-          var userModel = UserModel.fromJSON(objJSON);
+        print('objJSON = $objJSON');
+        var userModel = UserModel.fromJSON(objJSON);
 
-          String truePassword = userModel.Password.toString();
-          String name = userModel.Name.toString();
+        String truePassword = userModel.Password.toString();
+        String name = userModel.Name.toString();
 
-          print('pass = $password, truePass = $truePassword');
+        print('pass = $password, truePass = $truePassword');
 
-          if (password == truePassword) {
-            showSnackBar('ยินดีต้อนรับ $name');
-          } else {
-            showSnackBar('กรุณาลองใหม่ ? รหัสผิด คะ');
-          }
+        if (password == truePassword) {
+          // showSnackBar('ยินดีต้อนรับ $name');
 
+          var productRoute = MaterialPageRoute(
+              builder: (BuildContext context) => Product(
+                    nameLogin: name,
+                  ));
+                  // Navigator.of(context).push(productRoute); //Rout With Arror Back
+                  Navigator.of(context).pushAndRemoveUntil(productRoute, (Route<dynamic> route) => false);
+        } else {
+          showSnackBar('กรุณาลองใหม่ ? รหัสผิด คะ');
+        }
       }
-
-
-
     } // if
   }
 
@@ -133,8 +136,10 @@ class _AuthenState extends State<Authen> {
       duration: Duration(seconds: 6),
       backgroundColor: Colors.green[900],
       content: Text(message),
-      action: SnackBarAction(textColor: Colors.red,
-        label: 'Close',onPressed: (){},
+      action: SnackBarAction(
+        textColor: Colors.red,
+        label: 'Close',
+        onPressed: () {},
       ),
     );
     scaffoldKey.currentState.showSnackBar(snackBar);
@@ -201,7 +206,7 @@ class _AuthenState extends State<Authen> {
                   children: <Widget>[
                     Container(
                       child: Expanded(
-                        child: loginButton(),
+                        child: loginButton(context),
                       ),
                     ),
                   ],
